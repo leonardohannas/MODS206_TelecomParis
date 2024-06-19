@@ -4,9 +4,17 @@ library(fixest)
 
 dat <- read_csv("info/weeklyGrouping.csv")
 
+dat$datetime <- as.Date(dat$datetime)
+
+dat <- dat %>%
+  mutate(treated_time = floor(as.numeric(difftime(datetime, as.Date("2021-06-01"), units = "weeks"))))
+
 library(dplyr)
 
 dat_stations <- filter(dat, city == 1)
+
+dat_stations <- dat_stations %>%
+  mutate(treated = ifelse(station %in% c(4, 7), 0, 1))
 
 mod_twfe <- feols(pedestrianDeath ~ i(treated_time, treated, ref = -1),
                   data = dat_stations)
